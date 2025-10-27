@@ -1,0 +1,47 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  flex-direction: column;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.login-buttons{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-direction: column;
+}
+
+input {
+  padding: 10px 14px;
+  font-size: 16px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: 0.3s ease;
+}
+
+input:focus {
+  border-color: #4f46e5; /* màu xanh tím */
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+.info-container {
+   display: flex;
+  flex-direction: column;
+  justify-content: center; /* Căn giữa theo chiều dọc */
+  align-items: center;     /* Căn giữa theo chiều ngang */
+  min-height: 100vh;       /* Đảm bảo chiếm toàn bộ chiều cao màn hình */
+  text-align: center;      /* Căn giữa nội dung chữ */
+}
