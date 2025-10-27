@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none   # production không update schema tự động
+      ddl-auto: update   # production không update schema tự động
     show-sql: false    # tránh log query trong production
 
   redis:
