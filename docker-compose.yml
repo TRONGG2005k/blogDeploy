@@ -9,8 +9,7 @@ services:
     env_file:
       - .env
     volumes:
-      uploads:/app/uploads
-   # Mount volume lưu trữ file
+      - uploads:/app/uploads   # Mount volume lưu trữ file
     environment:
       - DBMS_URL_DEV=${DB_URL}
       - DBMS_USERNAME_DEV=${DB_USERNAME}
