@@ -8,6 +8,8 @@ services:
       - redis
     env_file:
       - .env
+    volumes:
+      - ./uploads:/app/uploads   # Mount volume lưu trữ file
     environment:
       - DBMS_URL_DEV=${DB_URL}
       - DBMS_USERNAME_DEV=${DB_USERNAME}
@@ -16,7 +18,7 @@ services:
       - SPRING_REDIS_PORT=${REDIS_PORT}
       - SPRING_REDIS_PASSWORD=${REDIS_PASSWORD}
       - SIGNER_KEY_ACCESS_DEV=${JWT_SIGNER_ACCESS}
-      - SIGNER_KEY_REFRESH_DEV=${JWT_SIGNER_REFRESH}
+      - SIGNER_KEY_REFRESH_DEV=${JWT_SIGNER_REFRESH}  
       - CLIENT_ID_DEV=${GOOGLE_CLIENT_ID}
       - CLIENT_SECRET_DEV=${GOOGLE_CLIENT_SECRET}
       - REDIRECT_URI_DEV=${GOOGLE_REDIRECT_URI}

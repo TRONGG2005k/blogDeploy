@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 RUN mvn clean package -DskipTests -B
 
-
+RUN mkdir -p /app/uploads/images /app/uploads/videos /app/uploads/others
 
 # Extract layers để tối ưu
 RUN mkdir -p target/extracted && \
