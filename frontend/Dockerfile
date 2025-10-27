@@ -21,8 +21,12 @@ FROM nginx:alpine
 WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
 
+# Copy build output từ stage 1
 COPY --from=builder /app/dist ./
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy nginx.conf từ stage 1 (đã có trong /app)
+COPY --from=builder /app/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
+
