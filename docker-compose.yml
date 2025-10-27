@@ -1,6 +1,7 @@
 version: "3.8"
 services:
   backend:
+    user: root
     build: ./backend
     container_name: backend
     depends_on:
