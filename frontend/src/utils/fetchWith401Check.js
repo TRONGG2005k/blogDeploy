@@ -1,4 +1,5 @@
 import { setToken, getToken } from "../service/LocalStorageService";
+import { API_BASE_URL } from "../configuration/configuration"; // <-- import API_BASE_URL
 
 // Hàm này sẽ được gọi khi token hết hạn (status 401)
 export const fetchWith401Check = async (url, options = {}) => {
