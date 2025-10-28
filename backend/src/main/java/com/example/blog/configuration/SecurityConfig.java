@@ -29,7 +29,8 @@ import java.util.List;
 @Configuration
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
-    private final String[] publicPaths = {"/", "/hello-world", "/auth/**", "/uploads/**", "/error"};
+    private final String[] publicPaths = {"/", "/hello-world", "/api/auth/**", "/uploads/**", "/error"};
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

@@ -79,7 +79,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./certs:/etc/ssl/certs
+      - ./certs:/etc/letsencrypt  
       - ./webroot:/var/www/certbot   # Thư mục Certbot webroot
     depends_on:
       - frontend
