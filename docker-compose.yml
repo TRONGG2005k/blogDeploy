@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   backend:
     user: root
@@ -68,17 +70,29 @@ services:
     volumes:
       - /home/ubuntu/.cloudflared:/etc/cloudflared
     command: tunnel --config /etc/cloudflared/config.yml run
+
   nginx:
     image: nginx:latest
     container_name: nginx
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certs:/etc/ssl/certs
+      - ./webroot:/var/www/certbot   # Thư mục Certbot webroot
     depends_on:
       - frontend
       - backend
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certs:/etc/letsencrypt
+      - ./webroot:/var/www/certbot
+    entrypoint: >
+      sh -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done;"
 
 volumes:
   mysqldata:
