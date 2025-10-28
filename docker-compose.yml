@@ -81,7 +81,6 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certs:/etc/letsencrypt  
       - ./webroot:/var/www/certbot   # Thư mục Certbot webroot
-      - ./frontend/build:/usr/share/nginx/html
     depends_on:
       - frontend
       - backend
