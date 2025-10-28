@@ -29,17 +29,13 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: frontend/Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: frontend
-    env_file:
-      - .env
     environment:
       - VITE_API_BASE_URL=${VITE_API_BASE_URL}
       - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
       - VITE_GOOGLE_REDIRECT_URI=${VITE_GOOGLE_REDIRECT_URI}
-    ports:
-      - "5173:80"
 
   mysql:
     image: mysql:innovation-oracle
@@ -80,10 +76,11 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certs:/etc/letsencrypt  
-      - ./webroot:/var/www/certbot   # Thư mục Certbot webroot
+      - ./webroot:/var/www/certbot
+      - ./frontend/build:/usr/share/nginx/html  # <-- mount React build
     depends_on:
-      - frontend
       - backend
+    restart: unless-stopped
 
   certbot:
     image: certbot/certbot
