@@ -42,9 +42,6 @@ services:
   nginx:
     image: nginx:latest
     container_name: nginx
-    depends_on:
-      - frontend
-      - backend
     ports:
       - "80:80"
       - "443:443"
@@ -52,8 +49,9 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certs:/etc/letsencrypt
       - ./webroot:/var/www/certbot
-    restart: unless-stopped
-
+    depends_on:
+      - frontend
+      - backend
   mysql:
     image: mysql:innovation-oracle
     container_name: mysql
