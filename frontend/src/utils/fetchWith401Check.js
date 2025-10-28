@@ -38,7 +38,7 @@ export const fetchWith401Check = async (url, options = {}) => {
 
 const refreshToken = async (navigate) => {
   try {
-        const res = await fetch("http://localhost:8080/auth/refresh", {
+        const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
             method: "POST",
             credentials: "include",
         });

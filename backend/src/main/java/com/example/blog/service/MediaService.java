@@ -1,15 +1,5 @@
 package com.example.blog.service;
 
-import com.example.blog.Enum.ErrorCode;
-import com.example.blog.entity.Media;
-import com.example.blog.exceptionHanding.exception.AppException;
-import com.example.blog.repository.MediaRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -20,6 +10,19 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.example.blog.Enum.ErrorCode;
+import com.example.blog.entity.Media;
+import com.example.blog.exceptionHanding.exception.AppException;
+import com.example.blog.repository.MediaRepository;
+
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -34,10 +37,28 @@ public class MediaService {
     @Value("${app.file.base-url:http://localhost:8080/uploads/}")
     protected String baseUrl;
 
-    public List<String> uploadFile(MultipartFile[] files) throws IOException {
-        Path rootLocation = Paths.get(uploadDir);
-        Files.createDirectories(rootLocation);
+    private Path rootLocation;
 
+    // Tạo thư mục khi container start
+    @PostConstruct
+    public void init() {
+        try {
+            rootLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
+            Files.createDirectories(rootLocation);
+            // Tạo các thư mục con
+            String[] subDirs = {"images", "videos", "others"};
+            for (String dir : subDirs) {
+                Path subDirPath = rootLocation.resolve(dir);
+                Files.createDirectories(subDirPath);
+                log.info("Directory created: {}", subDirPath);
+            }
+        } catch (IOException e) {
+            log.error("Could not initialize storage directories", e);
+            throw new RuntimeException("Could not initialize storage directories", e);
+        }
+    }
+
+    public List<String> uploadFile(MultipartFile[] files) throws IOException {
         List<String> fileUrls = new ArrayList<>();
         List<Media> mediaList = new ArrayList<>();
 
@@ -56,6 +77,7 @@ public class MediaService {
                 targetDir = rootLocation.resolve("others");
             }
 
+            // Đảm bảo thư mục tồn tại
             Files.createDirectories(targetDir);
 
             String extension = "";
@@ -94,7 +116,6 @@ public class MediaService {
     public boolean deleteFileByUrl(String fileUrl) {
         if (fileUrl == null || fileUrl.isEmpty()) return false;
 
-        // Tìm media trong DB theo url
         Media media = mediaRepository.findByUrl(fileUrl).orElse(null);
         if (media == null) {
             log.warn("File not found in DB: {}", fileUrl);
@@ -102,13 +123,10 @@ public class MediaService {
         }
 
         try {
-            // Lấy path thực tế từ URL
-            Path rootLocation = Paths.get(uploadDir);
             URI uri = new URI(fileUrl);
             String relativePath = uri.getPath().replaceFirst("/uploads/", "");
             Path filePath = rootLocation.resolve(relativePath).normalize();
 
-            // Xóa file trên filesystem nếu tồn tại
             if (Files.exists(filePath)) {
                 Files.delete(filePath);
                 log.info("Deleted file: {}", filePath);
@@ -117,7 +135,6 @@ public class MediaService {
                 throw new AppException(ErrorCode.FILE_NOT_FOUND);
             }
 
-            // Xóa record trong DB
             mediaRepository.delete(media);
             log.info("Deleted media record from DB: {}", fileUrl);
 
@@ -129,5 +146,4 @@ public class MediaService {
             throw new RuntimeException(e);
         }
     }
-
 }
