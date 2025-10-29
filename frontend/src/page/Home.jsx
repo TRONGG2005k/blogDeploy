@@ -74,8 +74,8 @@ function Home() {
         prevPosts.map(p => {
           if (p.id === postId) {
             const newCount = data.type === null
-              ? p.reactionCount - 1
-              : (p.myReaction ? p.reactionCount : p.reactionCount + 1);
+              ? p.reactionCount - 1   // user bỏ like
+              : p.reactionCount + 1;  // user vừa like
             return { ...p, reactionCount: newCount, myReaction: data.type };
           }
           return p;
@@ -85,6 +85,7 @@ function Home() {
       console.error("Reaction error", error);
     }
   };
+
 
   const handleShare = async (postId) => {
     const url = `${window.location.origin}/post/${postId}`;
