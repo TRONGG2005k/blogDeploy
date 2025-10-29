@@ -14,6 +14,7 @@ function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
 
+  // --- fetchPosts chuẩn ---
   const fetchPosts = async (pageParam) => {
     if (loading) return;
     setLoading(true);
@@ -33,7 +34,15 @@ function Home() {
         return;
       }
 
-      setPosts(prev => [...prev, ...data.content]);
+      // chuẩn hóa dữ liệu để tránh undefined
+      const normalized = data.content.map(p => ({
+        ...p,
+        reactionCount: Number(p.reactionCount ?? 0),
+        myReaction: p.myReaction ?? null,
+        countComment: Number(p.countComment ?? 0),
+      }));
+
+      setPosts(prev => [...prev, ...normalized]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -56,6 +65,7 @@ function Home() {
   const handleComment = (postId) => { setSelectedPostId(postId); setIsModalOpen(true); };
   const handleCloseModal = () => { setIsModalOpen(false); setSelectedPostId(null); };
 
+  // --- handleReaction chuẩn ---
   const handleReaction = async (postId) => {
     try {
       const res = await fetchWith401Check(`${API_BASE_URL}/post-reactions`, {
@@ -73,18 +83,15 @@ function Home() {
       setPosts(prevPosts =>
         prevPosts.map(p => {
           if (p.id === postId) {
-            // đảm bảo reactionCount luôn là số
-            const currentCount = p.reactionCount ?? 0;
-
-            // tính số like mới
+            const currentCount = Number(p.reactionCount ?? 0);
             const newCount = data.type === null
-              ? Math.max(currentCount - 1, 0) // user bỏ like, tránh âm
-              : currentCount + 1;             // user vừa like
+              ? Math.max(currentCount - 1, 0)
+              : currentCount + 1;
 
             return {
               ...p,
               reactionCount: newCount,
-              myReaction: data.type ?? null,  // đảm bảo không undefined
+              myReaction: data.type ?? null,
             };
           }
           return p;
@@ -94,8 +101,6 @@ function Home() {
       console.error("Reaction error", error);
     }
   };
-
-
 
   const handleShare = async (postId) => {
     const url = `${window.location.origin}/post/${postId}`;
@@ -152,10 +157,10 @@ function Home() {
 
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px" }}>
             <button style={{ background: "transparent", border: "none", color: "white", cursor: "pointer" }}
-              onClick={() => handleReaction(post.id)}>👍 {post.reactionCount}</button>
+              onClick={() => handleReaction(post.id)}>👍 {post.reactionCount ?? 0}</button>
 
             <button style={{ background: "transparent", border: "none", color: "white", cursor: "pointer" }}
-              onClick={() => handleComment(post.id)}>💬 {post.countComment || 0}</button>
+              onClick={() => handleComment(post.id)}>💬 {post.countComment ?? 0}</button>
 
             <button style={{ background: "transparent", border: "none", color: "white", cursor: "pointer" }}
               onClick={() => handleShare(post.id)}>🔗 Chia sẻ</button>
