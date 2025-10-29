@@ -4,6 +4,10 @@ import { API_BASE_URL } from "../configuration/configuration"; // <-- import API
 // Hàm này sẽ được gọi khi token hết hạn (status 401)
 export const fetchWith401Check = async (url, options = {}) => {
   const token = getToken("accessToken");
+  
+  // Ensure base URL is properly set
+  const apiUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+  console.log('Fetching URL:', apiUrl); // Debug log
 
   const headers = {
     ...options.headers,
@@ -11,7 +15,7 @@ export const fetchWith401Check = async (url, options = {}) => {
   };
 
   try {
-    let response = await fetch(url, {
+    let response = await fetch(apiUrl, {
       ...options,
       headers,
     });
