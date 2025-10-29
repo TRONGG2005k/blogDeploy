@@ -73,10 +73,19 @@ function Home() {
       setPosts(prevPosts =>
         prevPosts.map(p => {
           if (p.id === postId) {
+            // đảm bảo reactionCount luôn là số
+            const currentCount = p.reactionCount ?? 0;
+
+            // tính số like mới
             const newCount = data.type === null
-              ? p.reactionCount - 1   // user bỏ like
-              : p.reactionCount + 1;  // user vừa like
-            return { ...p, reactionCount: newCount, myReaction: data.type };
+              ? Math.max(currentCount - 1, 0) // user bỏ like, tránh âm
+              : currentCount + 1;             // user vừa like
+
+            return {
+              ...p,
+              reactionCount: newCount,
+              myReaction: data.type ?? null,  // đảm bảo không undefined
+            };
           }
           return p;
         })
@@ -85,6 +94,7 @@ function Home() {
       console.error("Reaction error", error);
     }
   };
+
 
 
   const handleShare = async (postId) => {
