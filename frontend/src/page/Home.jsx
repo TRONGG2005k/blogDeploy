@@ -94,9 +94,11 @@ function Home() {
               myReaction: data.type ?? null,
             };
           }
-          return p;
+          // clone tất cả post để Chrome re-render chắc chắn
+          return { ...p };
         })
       );
+
     } catch (error) {
       console.error("Reaction error", error);
     }
