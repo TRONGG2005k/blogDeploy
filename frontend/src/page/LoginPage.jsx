@@ -6,7 +6,7 @@ import { setToken, getToken } from '../service/LocalStorageService';
 import { fetchWith401Check } from '../utils/fetchWith401Check';
 import { OAuthConfig, API_BASE_URL } from '../configuration/configuration';
 import { useAuth } from "../components/AuthContext";
-import { debugLog } from "../utils/debugging";
+import { showDebugOverlay } from "../utils/debugOverlay";
 
 const { Title } = Typography;
 
@@ -25,13 +25,14 @@ function Login() {
     setLoading(true);
 
     try {
-      debugLog('Login Attempt', {
+      showDebugOverlay({
+        step: 'Login Attempt',
         API_BASE_URL,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        loginUrl: `${API_BASE_URL}/auth/login`
       });
       
       const loginUrl = `${API_BASE_URL}/auth/login`;
-      debugLog('Login URL', loginUrl);
       
       const response = await fetchWith401Check(loginUrl, {
         method: 'POST',
