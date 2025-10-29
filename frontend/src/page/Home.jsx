@@ -10,7 +10,7 @@ function Home() {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [tick, setTick] = useState(0);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
 
@@ -34,7 +34,7 @@ function Home() {
         return;
       }
 
-      // chuẩn hóa dữ liệu để tránh undefined
+      // chuẩn hóa dữ liệu
       const normalized = data.content.map(p => ({
         ...p,
         reactionCount: Number(p.reactionCount ?? 0),
@@ -82,11 +82,11 @@ function Home() {
 
       setPosts(prevPosts =>
         prevPosts.map(p => {
+          const currentCount = Number(p.reactionCount ?? 0);
           if (p.id === postId) {
-            const currentCount = Number(p.reactionCount ?? 0);
             const newCount = data.type === null
-              ? Math.max(currentCount - 1, 0)
-              : currentCount + 1;
+              ? Math.max(currentCount - 1, 0) // user bỏ like
+              : currentCount + (p.myReaction === null ? 1 : 0); // chỉ tăng nếu chưa like
 
             return {
               ...p,
@@ -94,12 +94,9 @@ function Home() {
               myReaction: data.type ?? null,
             };
           }
-          // clone tất cả post để Chrome re-render chắc chắn
-          return { ...p };
+          return { ...p }; // clone tất cả post khác để Chrome re-render
         })
-
       );
-      setTick(prev => prev + 1);
     } catch (error) {
       console.error("Reaction error", error);
     }
@@ -114,8 +111,8 @@ function Home() {
   const updateCommentCount = (postId, delta = 1) => {
     setPosts(prevPosts =>
       prevPosts.map(p => p.id === postId
-        ? { ...p, countComment: (p.countComment || 0) + delta }
-        : p
+        ? { ...p, countComment: (Number(p.countComment) || 0) + delta }
+        : { ...p }
       )
     );
   };
@@ -133,7 +130,7 @@ function Home() {
 
       {posts.map(post => (
         <Card
-          key={post.id}
+          key={`${post.id}-${post.reactionCount}`} // thêm reactionCount vào key để Chrome chắc chắn re-render
           style={{
             marginBottom: 16,
             background: "#2f2f2f",
@@ -160,10 +157,10 @@ function Home() {
 
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px" }}>
             <button style={{ background: "transparent", border: "none", color: "white", cursor: "pointer" }}
-              onClick={() => handleReaction(post.id)}>👍 {post.reactionCount ?? 0}</button>
+              onClick={() => handleReaction(post.id)}>👍 {post.reactionCount}</button>
 
             <button style={{ background: "transparent", border: "none", color: "white", cursor: "pointer" }}
-              onClick={() => handleComment(post.id)}>💬 {post.countComment ?? 0}</button>
+              onClick={() => handleComment(post.id)}>💬 {post.countComment}</button>
 
             <button style={{ background: "transparent", border: "none", color: "white", cursor: "pointer" }}
               onClick={() => handleShare(post.id)}>🔗 Chia sẻ</button>

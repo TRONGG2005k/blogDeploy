@@ -11,7 +11,7 @@ function CreatePostModal({ visible, onClose, onPostCreated, editingPost = null }
   const [tags, setTags] = useState("");
   const [mediaFiles, setMediaFiles] = useState([]);
   const [existingMediaUrls, setExistingMediaUrls] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);  
 
   useEffect(() => {
     if (editingPost) {
