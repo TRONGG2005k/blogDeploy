@@ -24,7 +24,11 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await fetchWith401Check(`${API_BASE_URL}/auth/login`, {
+      console.log('API_BASE_URL:', API_BASE_URL); // Debug log
+      const loginUrl = `${API_BASE_URL}/auth/login`;
+      console.log('Login URL:', loginUrl); // Debug log
+      
+      const response = await fetchWith401Check(loginUrl, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
