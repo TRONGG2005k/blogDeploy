@@ -1,176 +1,79 @@
-import React, { useState, useEffect } from 'react';
-import { Card, message } from "antd";
-import { getToken } from '../service/LocalStorageService';
-import { fetchWith401Check } from '../utils/fetchWith401Check';
-import PostCommentModal from "../components/PostCommentModal";
+import { useEffect, useState } from "react";
+import { fetchWith401Check } from "../utils/fetchWith401Check";
+import { Card, Button } from "antd"; 
+import { useNavigate } from "react-router-dom";
+import { getToken } from "../service/LocalStorageService";
 import { API_BASE_URL } from "../configuration/configuration";
 
-function Home() {
-  const [posts, setPosts] = useState([]);
-  const [page, setPage] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPostId, setSelectedPostId] = useState(null);
-
-  const fetchPosts = async (pageParam) => {
-    if (loading) return;
-    setLoading(true);
-    try {
-      const res = await fetchWith401Check(`${API_BASE_URL}/post?page=${pageParam}`, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${getToken()}`,
-        }
-      });
-
-      const data = await res.json();
-      if (!data.content || data.content.length === 0) {
-        setHasMore(false);
-        return;
-      }
-
-      const normalized = data.content.map(p => ({
-        ...p,
-        reactionCount: Number(p.reactionCount ?? 0),
-        myReaction: p.myReaction ?? null,
-        countComment: Number(p.countComment ?? 0),
-      }));
-
-      setPosts(prev => [...prev, ...normalized]);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchPosts(page); }, [page]);
+const AdminDashboard = () => {
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 && hasMore && !loading) {
-        setPage(prev => prev + 1);
+    const checkAdmin = async () => {
+      try {
+        const res = await fetchWith401Check(`${API_BASE_URL}/user/info`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`,
+          },
+        });
+
+        if (!res.ok) {
+          navigate("/"); 
+          return;
+        }
+
+        const data = await res.json();
+        if (!data?.roles?.map(r => r.name).includes("ROLE_ADMIN")) {
+          navigate("/home"); 
+          return;
+        }
+
+      } catch (e) {
+        navigate("/");
+      } finally {
+        setLoading(false);
       }
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [hasMore, loading]);
 
-  const handleComment = (postId) => { setSelectedPostId(postId); setIsModalOpen(true); };
-  const handleCloseModal = () => { setIsModalOpen(false); setSelectedPostId(null); };
+    checkAdmin();
+  }, [navigate]);
 
-  const handleReaction = async (postId) => {
-    try {
-      const res = await fetchWith401Check(`${API_BASE_URL}/post-reactions`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({ postId, type: "LIKE" })
-      });
-
-      const data = await res.json();
-
-      setPosts(prevPosts =>
-        prevPosts.map(p => {
-          const currentCount = Number(p.reactionCount ?? 0);
-          if (p.id === postId) {
-            const newCount = data.type === null
-              ? Math.max(currentCount - 1, 0)
-              : currentCount + (p.myReaction === null ? 1 : 0);
-
-            return { ...p, reactionCount: newCount, myReaction: data.type ?? null };
-          }
-          return { ...p }; // clone tất cả để Chrome render
-        })
-      );
-    } catch (error) {
-      console.error("Reaction error", error);
-    }
-  };
-
-  const handleShare = async (postId) => {
-    const url = `${window.location.origin}/post/${postId}`;
-    await navigator.clipboard.writeText(url);
-    message.success("Đã copy link bài viết");
-  };
-
-  const updateCommentCount = (postId, delta = 1) => {
-    setPosts(prevPosts =>
-      prevPosts.map(p => ({ ...p, countComment: p.id === postId ? (Number(p.countComment) || 0) + delta : p.countComment }))
-    );
-  };
+  if (loading) return <p style={{color:"white"}}>Đang tải dữ liệu...</p>;
 
   return (
-    <div style={{
-      paddingTop: "80px",
-      paddingBottom: "20px",
-      background: "#242424",
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center"
-    }}>
-
-      {posts.map(post => (
-        <Card
-          key={`${post.id}-${post.reactionCount}-${post.countComment}`}
-          style={{
-            marginBottom: 16,
-            background: "#2f2f2f",
-            color: "white",
-            width: "610px",
-            maxWidth: "100%",
-          }}
-        >
-          <h3 style={{ color: "white" }}>{post.username}</h3>
-          <p style={{ color: "#dcdcdc" }}>{post.caption}</p>
-
-          {post.mediaUrls?.length > 0 && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "10px" }}>
-              {post.mediaUrls.map((media, idx) => (
-                <img
-                  key={idx}
-                  src={media}
-                  alt="post"
-                  style={{ width: "180px", height: "180px", objectFit: "cover", borderRadius: "8px" }}
-                />
-              ))}
-            </div>
-          )}
-
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px" }}>
-            <button style={{ background: "transparent", border: "none", color: "white", cursor: "pointer" }}
-              onClick={() => handleReaction(post.id)}>👍 {post.reactionCount}</button>
-
-            <button style={{ background: "transparent", border: "none", color: "white", cursor: "pointer" }}
-              onClick={() => handleComment(post.id)}>💬 {post.countComment}</button>
-
-            <button style={{ background: "transparent", border: "none", color: "white", cursor: "pointer" }}
-              onClick={() => handleShare(post.id)}>🔗 Chia sẻ</button>
-          </div>
+    <div style={{ padding: "20px", color: "white" }}>
+      <h1 style={{ marginBottom: "20px" }}>Trang quản trị</h1>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" }}>
+        <Card style={{ background: "#2f2f2f" }}>
+          <h3 style={{ color: "white" }}>📝 Quản lý bài viết</h3>
+          <p style={{ color: "#bfbfbf" }}>Xóa bài viết, duyệt bài, xem chi tiết</p>
+          <Button type="primary" onClick={() => navigate("/admin/posts")}>
+            Đi tới quản lý bài viết
+          </Button>
         </Card>
-      ))}
 
-      {loading && <p style={{ color: "white", textAlign: "center" }}>Đang tải...</p>}
-      {!hasMore && <p style={{ color: "white", textAlign: "center" }}>Hết bài viết</p>}
+        <Card style={{ background: "#2f2f2f" }}>
+          <h3 style={{ color: "white" }}>👤 Quản lý người dùng</h3>
+          <p style={{ color: "#bfbfbf" }}>Vô hiệu hóa / bật lại user</p>
+          <Button type="primary" onClick={() => navigate("/admin/users")}>
+            Đi tới quản lý user
+          </Button>
+        </Card>
 
-      {isModalOpen && (
-        <PostCommentModal
-          open={isModalOpen}
-          onClose={handleCloseModal}
-          postId={selectedPostId}
-          onNewComment={updateCommentCount}
-        />
-      )}
+        <Card style={{ background: "#2f2f2f" }}>
+          <h3 style={{ color: "white" }}>🏷️ CRUD Tag</h3>
+          <p style={{ color: "#bfbfbf" }}>Thêm / Sửa / Xóa tag bài viết</p>
+          <Button type="primary" onClick={() => navigate("/admin/tags")}>
+            Đi tới quản lý tag
+          </Button>
+        </Card>
+      </div>
     </div>
   );
-}
+};
 
-export default Home;
+export default AdminDashboard;

@@ -14,7 +14,6 @@ function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
 
-  // --- fetchPosts chuẩn ---
   const fetchPosts = async (pageParam) => {
     if (loading) return;
     setLoading(true);
@@ -34,7 +33,6 @@ function Home() {
         return;
       }
 
-      // chuẩn hóa dữ liệu
       const normalized = data.content.map(p => ({
         ...p,
         reactionCount: Number(p.reactionCount ?? 0),
@@ -65,7 +63,6 @@ function Home() {
   const handleComment = (postId) => { setSelectedPostId(postId); setIsModalOpen(true); };
   const handleCloseModal = () => { setIsModalOpen(false); setSelectedPostId(null); };
 
-  // --- handleReaction chuẩn ---
   const handleReaction = async (postId) => {
     try {
       const res = await fetchWith401Check(`${API_BASE_URL}/post-reactions`, {
@@ -85,16 +82,12 @@ function Home() {
           const currentCount = Number(p.reactionCount ?? 0);
           if (p.id === postId) {
             const newCount = data.type === null
-              ? Math.max(currentCount - 1, 0) // user bỏ like
-              : currentCount + (p.myReaction === null ? 1 : 0); // chỉ tăng nếu chưa like
+              ? Math.max(currentCount - 1, 0)
+              : currentCount + (p.myReaction === null ? 1 : 0);
 
-            return {
-              ...p,
-              reactionCount: newCount,
-              myReaction: data.type ?? null,
-            };
+            return { ...p, reactionCount: newCount, myReaction: data.type ?? null };
           }
-          return { ...p }; // clone tất cả post khác để Chrome re-render
+          return { ...p }; // clone tất cả để Chrome render
         })
       );
     } catch (error) {
@@ -110,10 +103,7 @@ function Home() {
 
   const updateCommentCount = (postId, delta = 1) => {
     setPosts(prevPosts =>
-      prevPosts.map(p => p.id === postId
-        ? { ...p, countComment: (Number(p.countComment) || 0) + delta }
-        : { ...p }
-      )
+      prevPosts.map(p => ({ ...p, countComment: p.id === postId ? (Number(p.countComment) || 0) + delta : p.countComment }))
     );
   };
 
@@ -130,7 +120,7 @@ function Home() {
 
       {posts.map(post => (
         <Card
-          key={`${post.id}-${post.reactionCount}`} // thêm reactionCount vào key để Chrome chắc chắn re-render
+          key={`${post.id}-${post.reactionCount}-${post.countComment}`}
           style={{
             marginBottom: 16,
             background: "#2f2f2f",
