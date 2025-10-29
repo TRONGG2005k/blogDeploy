@@ -10,7 +10,7 @@ function Home() {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-
+  const [tick, setTick] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
 
@@ -97,8 +97,9 @@ function Home() {
           // clone tất cả post để Chrome re-render chắc chắn
           return { ...p };
         })
-      );
 
+      );
+      setTick(prev => prev + 1);
     } catch (error) {
       console.error("Reaction error", error);
     }
