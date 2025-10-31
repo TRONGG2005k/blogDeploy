@@ -29,21 +29,6 @@ services:
     ports:
       - "8080:8080"
 
-  frontend:
-    image: trong2005/blog-frontend:latest
-    container_name: frontend
-    env_file:
-      - .env
-    environment:
-      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
-      - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
-      - VITE_GOOGLE_REDIRECT_URI=${VITE_GOOGLE_REDIRECT_URI}
-    depends_on:
-      - backend
-    networks:
-      - blog-net
-    restart: always
-
   mysql:
     image: mysql:innovation-oracle
     container_name: mysql
@@ -78,9 +63,9 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./nginx/certs:/etc/ssl/private
-      - ./webroot:/var/www/certbot 
+      - ./webroot:/var/www/certbot
+      - ./frontend/build:/usr/share/nginx/html  # mount React build
     depends_on:
-      - frontend
       - backend
     networks:
       - blog-net
@@ -104,4 +89,4 @@ volumes:
 
 networks:
   blog-net:
-    driver: bridge 
+    driver: bridge
