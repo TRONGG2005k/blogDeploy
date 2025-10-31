@@ -26,6 +26,8 @@ services:
   frontend:
     image: trong2005/blog-frontend:latest
     container_name: frontend
+    volumes:
+      - frontend_dist:/app/dist
     networks:
       - blog-net
     restart: always
@@ -64,3 +66,6 @@ services:
 networks:
   blog-net:
     driver: bridge
+
+volumes:
+  frontend_dist:
