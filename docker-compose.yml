@@ -79,9 +79,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./nginx/certs:/etc/ssl/private
       - ./webroot:/var/www/certbot
-      - ./frontend/dist:/usr/share/nginx/html
     depends_on:
-      - frontend
       - backend
     networks:
       - blog-net
