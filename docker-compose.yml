@@ -41,7 +41,7 @@ services:
       - ./nginx/certs:/etc/letsencrypt
       - ./webroot:/var/www/certbot
       - ./nginx/html:/usr/share/nginx/html
-
+      - frontend_dist:/usr/share/nginx/html
     depends_on:
       - frontend
       - backend
