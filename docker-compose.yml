@@ -29,13 +29,31 @@ services:
     ports:
       - "8080:8080"
 
+  frontend:
+    image: trong2005/blog-frontend:latest
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+      - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
+      - VITE_GOOGLE_REDIRECT_URI=${VITE_GOOGLE_REDIRECT_URI}
+    depends_on:
+      - backend
+    networks:
+      - blog-net
+    restart: always
+
   mysql:
     image: mysql:innovation-oracle
     container_name: mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
       - MYSQL_DATABASE=blog
-      - MYSQL_ROOT_HOST=%
+      - MYSQL_ROOT_HOST=%  
     volumes:
       - mysqldata:/var/lib/mysql
     ports:
@@ -66,6 +84,7 @@ services:
       - ./webroot:/var/www/certbot
       - ./frontend/build:/usr/share/nginx/html  # mount React build
     depends_on:
+      - frontend
       - backend
     networks:
       - blog-net
